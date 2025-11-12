@@ -2,7 +2,7 @@
 clear variables
 clear mex
 close all
-clc
+% clc
 
 addpath measurements_12_11_2025
 
@@ -10,6 +10,7 @@ addpath measurements_12_11_2025
 
 %% LOAD SIGNALS FROM MEASUREMENTS
 
+% Hann window Random noise
 file_names = strvcat(...
     '8_hann_random_8_13_34_40__G10.mat',...
     '64_hann_random_64_13_34_58__G10.mat',...
@@ -21,17 +22,76 @@ file_names = strvcat(...
     );
     
 
-disp(strsplit(file_names(1,:), '_'))
+% % Hann window Pseudo noise
+% file_names = strvcat(...
+%     '64_hann_pseudo_64_13_44_16__G10.mat',...
+%     '256_hann_pseudo_256_13_43_53__G10.mat',...
+%     '1024_hann_pseudo_1024_13_42_50__G10.mat',...
+%     '2048_hann_pseudo_2048_13_40_56__G10.mat',...
+%     '4096_hann_pseudo_4096_13_41_26__G10.mat',...
+%     '32768_hann_random_32768_13_38_17__G10.mat'...
+%     );
+
+% % Rect window Random noise
+% file_names = strvcat(...
+%     '256_rect_random_256_13_50_47__G10.mat',...
+%     '1024_rect_random_1024_13_51_06__G10.mat',...
+%     '4096_rect_random_4096_13_51_30__G10.mat',...
+%     '32768_rect_random_32768_13_53_17__G10.mat'...
+%     );
+
+% % Rect window Pseudo noise
+% file_names = strvcat(...
+%     '256_rect_pseudo_256_13_54_29__G10.mat',...
+%     '1024_rect_pseudo_1024_13_54_53__G10.mat',...
+%     '4096_rect_pseudo_4096_13_55_26__G10.mat',...
+%     '32768_rect_random_32768_13_53_17__G10.mat'...
+%     );
+
+
+
+%% COMPUTE PERFORMANCE METRIC (mean and std)
+
+
+meanSignal = zeros(1, size(file_names,1));
+stdSignal  = zeros(1, size(file_names,1));
+NSTFT = zeros(1, size(file_names,1));
+
+for i = 1:size(file_names,1)
+    load(file_names(i,:));
+
+    [~, name, ~] = fileparts(file_names(i,:));
+    params = strsplit(name, '_'); 
+
+    idx = f >= 300;
+    C = C(idx);
+
+    NSTFT(i) = string(params(1));
+    meanSignal(i) = mean(C);
+    stdSignal(i)  = std(C);
+end
+
+disp(table(NSTFT', meanSignal', stdSignal', ...
+    'VariableNames', {'FileID', 'MeanCoherence', 'StdCoherence'}))
+
 
 
 %% PLOTS
+
+fCutOn = 300;
+
 
 for i = 1:size(file_names,1)
     load(file_names(i,:));
 
     % Strip file extension, then split
     [~, name, ~] = fileparts(file_names(i,:));
-    params = strsplit(name, '_');  % now it's a cell array of chars
+    params = strsplit(name, '_');
+
+
+    idx = f >= 300;
+    C = C(idx);
+    f = f(idx);
 
     figure(i)
     semilogx(f, C)
@@ -52,7 +112,7 @@ for i = 1:size(file_names,1)
 
     % Strip file extension, then split
     [~, name, ~] = fileparts(file_names(i,:));
-    params = strsplit(name, '_');  % now it's a cell array of chars
+    params = strsplit(name, '_');
 
     figure(i)
     loglog(f,abs(H1),f,abs(H2))
@@ -72,7 +132,7 @@ for i = 1:size(file_names,1)
 
     % Strip file extension, then split
     [~, name, ~] = fileparts(file_names(i,:));
-    params = strsplit(name, '_');  % now it's a cell array of chars
+    params = strsplit(name, '_');
 
     figure(i)
     plot(t,[x2 y2]')
