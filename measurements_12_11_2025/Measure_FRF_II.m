@@ -157,7 +157,7 @@ SNR = C ./ (1 - C);
 
 
 
-f=[1:length(XX)]*fs/length(XX);
+f = [1:length(XX)]*fs/length(XX);
 
 figure(2)
 loglog(f,abs(H1),f,abs(H2))
